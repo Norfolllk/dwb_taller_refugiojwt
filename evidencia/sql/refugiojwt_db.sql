@@ -7,4 +7,4 @@ CREATE TABLE usuarios (
     rol VARCHAR(20) NOT NULL
 );
 
-SELECT * FROM usuarios
+SELECT * FROM usuarios;
