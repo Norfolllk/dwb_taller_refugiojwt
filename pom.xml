@@ -12,7 +12,7 @@
     <artifactId>refugio_jwt</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>refugio_jwt</name>
-    <description>Refugio Patitas al Rescate</description>
+    <description>Refugio Patitas al Rescate: criptografia y JWT</description>
     <properties>
         <java.version>21</java.version>
     </properties>
@@ -36,6 +36,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
         </dependency>
 
     </dependencies>
