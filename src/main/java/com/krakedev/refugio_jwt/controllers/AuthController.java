@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.krakedev.refugio_jwt.utils.JwtUtil;
 import com.krakedev.refugio_jwt.entidades.Usuario;
+import com.krakedev.refugio_jwt.repositories.UsuarioRepository;
 import com.krakedev.refugio_jwt.services.UsuarioService;
 
 @RestController
@@ -17,11 +19,14 @@ import com.krakedev.refugio_jwt.services.UsuarioService;
 public class AuthController {
 
     private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
 
-    public AuthController(UsuarioService usuarioService) {
+    public AuthController(UsuarioService usuarioService, UsuarioRepository usuarioRepository) {
         super();
         this.usuarioService = usuarioService;
+        this.usuarioRepository = usuarioRepository;
     }
+    
 
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
@@ -38,6 +43,7 @@ public class AuthController {
         }
 
     }
+    
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
@@ -49,7 +55,11 @@ public class AuthController {
 
         if (autenticado) {
 
-            return ResponseEntity.ok("Login exitoso");
+            Usuario usuario = usuarioRepository.findByUsername(username).get();
+
+            String token = JwtUtil.generarToken(usuario.getUsername(), usuario.getRol());
+
+            return ResponseEntity.ok(Map.of("token", token));
 
         } else {
 
