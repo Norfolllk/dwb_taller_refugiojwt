@@ -2,58 +2,55 @@ package com.krakedev.refugio_jwt.utils;
 
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 public class JwtUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
+    // nombre de la variable de entorno que contiene la clave de firma
+    private static final String VARIABLE_CLAVE = "JWT_SECRET";
 
-    private static final String CLAVE_SECRETA = "EstaEsUnaClaveSuperSecretaYMuyLarga1234567890!";
+    // validez estricta: 30 minutos
+    private static final long EXPIRATION_TIME = 30 * 60 * 1000;
 
-    private static final String EMISOR = "KrakeDevBackend";
+    // La clave NO está escrita en el código: se lee de la variable de entorno JWT_SECRET
+    private static Algorithm obtenerAlgoritmo() {
 
-    private static final long TIEMPO_EXPIRACION = 1800000;
-    
+        String secreto = System.getenv(VARIABLE_CLAVE);
 
+        if (secreto == null || secreto.length() < 32) {
+            throw new IllegalStateException(
+                    "Configura la variable de entorno JWT_SECRET con al menos 32 caracteres");
+        }
+
+        return Algorithm.HMAC256(secreto);
+    }
+
+    // Generar el token JWT
     public static String generarToken(String username, String rol) {
 
-        Algorithm algoritmo = Algorithm.HMAC256(CLAVE_SECRETA);
+        Date ahora = new Date();
+        Date expiracion = new Date(
+                ahora.getTime() + EXPIRATION_TIME
+        );
 
-        long tiempoActual = System.currentTimeMillis();
-
-        Date fechaExpiracion = new Date(tiempoActual + TIEMPO_EXPIRACION);
-
-        String tokenGenerado = JWT.create().withIssuer(EMISOR).withSubject(username)
-                .withIssuedAt(new Date(tiempoActual)).withExpiresAt(fechaExpiracion).withClaim("rol", rol)
-                .sign(algoritmo);
-
-        return tokenGenerado;
+        return JWT.create()
+                .withSubject(username)
+                .withClaim("rol", rol)
+                .withIssuedAt(ahora)
+                .withExpiresAt(expiracion)
+                .sign(obtenerAlgoritmo());
     }
-    
 
-    public static DecodedJWT validarToken(String token) {
+    // Validar la firma y la expiración del token
+    public static DecodedJWT validarToken(String token)
+            throws JWTVerificationException {
 
-        try {
-            Algorithm algoritmo = Algorithm.HMAC256(CLAVE_SECRETA);
-
-            JWTVerifier verificador = JWT.require(algoritmo).withIssuer(EMISOR).build();
-
-            DecodedJWT tokenDecodificado = verificador.verify(token);
-
-            return tokenDecodificado;
-            
-        } catch (Exception e) {
-
-            logger.error("Error de validación del Token: " + e.getMessage());
-
-            return null;
-        }
+        return JWT.require(obtenerAlgoritmo())
+                .build()
+                .verify(token);
     }
 
 }

@@ -1,5 +1,7 @@
 package com.krakedev.refugio_jwt.entidades;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,7 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity
+@Entity // entidad (tabla)
 @Table(name = "usuarios")
 public class Usuario {
 
@@ -15,14 +17,16 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(nullable = false)
+    // WRITE_ONLY: la contraseña se puede recibir en el JSON, pero NUNCA se devuelve
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
 
-    @Column(nullable = false)
-    private String rol;
+    @Column(name = "rol", nullable = false, length = 20)
+    private String rol; // solo ADMIN o USER
 
     public Usuario() {
         super();
